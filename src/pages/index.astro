@@ -1,0 +1,89 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Arc from '../components/Arc.astro';
+import Icon from '../components/Icon.astro';
+import ProjectIcon from '../components/ProjectIcon.astro';
+import Base from '../layouts/Base.astro';
+import { formatDate, path } from '../lib/format';
+import { displayVersion } from '../lib/release';
+
+const org = (await getEntry('org', 'bitoolkit'))!.data;
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const featured = projects.filter((project) => project.data.cover);
+const others = projects.filter((project) => !project.data.cover);
+const tone = (colors: { deep: string; accent: string; soft: string }) =>
+  `--deep: ${colors.deep}; --accent: ${colors.accent}; --soft: ${colors.soft};`;
+---
+
+<Base title={`BIToolkit · ${org.tagline ?? org.title}`} description={org.description ?? org.tagline}>
+  <section slot="hero" class="hero home-hero wrap">
+    <Arc class="hero-arc" />
+    <h1 class="display">{org.tagline ?? org.title}</h1>
+    {org.description && <p class="hero-lead">{org.description}</p>}
+    <div class="hero-actions">
+      <a class="button on-band" href="#projects">
+        查看全部项目 <Icon name="arrow" />
+      </a>
+      {org.community && <a class="button ghost" href={org.community}>加入交流群</a>}
+    </div>
+  </section>
+
+  <section class="wrap catalog" id="projects" aria-labelledby="projects-title">
+    <h2 id="projects-title" class="eyebrow">{projects.length} 个项目</h2>
+    {
+      featured.length > 0 && (
+        <ul class="feature-list">
+          {featured.map(({ id, data }) => (
+            <li class="feature" style={tone(data.colors)}>
+              <a class="feature-link" href={path(`${id}/`)}>
+                <div class="feature-text">
+                  <div class="entry-title">
+                    <ProjectIcon name={data.name} logo={data.logo} size={48} />
+                    <h3>{data.name}</h3>
+                  </div>
+                  <p class="summary">{data.summary}</p>
+                  <p class="facts">
+                    {data.release && <span>{displayVersion(data.release.tag)}</span>}
+                    {data.language && <span>{data.language}</span>}
+                    <span>{formatDate(data.pushedAt)} 更新</span>
+                  </p>
+                  <span class="more">
+                    了解 {data.name} <Icon name="arrow" />
+                  </span>
+                </div>
+                <div class="feature-visual" aria-hidden="true">
+                  <img src={data.cover} alt="" loading="lazy" />
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+    {
+      others.length > 0 && (
+        <ul class="index-list">
+          {others.map(({ id, data }) => (
+            <li style={tone(data.colors)}>
+              <a class="index-link" href={path(`${id}/`)}>
+                <ProjectIcon name={data.name} logo={data.logo} size={56} />
+                <span class="index-text">
+                  <span class="index-name">{data.name}</span>
+                  <span class="summary">{data.summary}</span>
+                  <span class="facts">
+                    {data.release && <span>{displayVersion(data.release.tag)}</span>}
+                    {data.language && <span>{data.language}</span>}
+                    <span>{formatDate(data.pushedAt)} 更新</span>
+                  </span>
+                </span>
+                <span class="index-go" aria-hidden="true">
+                  <Icon name="arrow" />
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+</Base>

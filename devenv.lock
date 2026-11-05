@@ -1,0 +1,105 @@
+{
+  "nodes": {
+    "devenv": {
+      "locked": {
+        "dir": "src/modules",
+        "lastModified": 1793731702,
+        "narHash": "sha256-WlVNaWXVTYaGBNey2Z+20sY1lT7BvzJEECb+VlDDdk0=",
+        "owner": "cachix",
+        "repo": "devenv",
+        "rev": "9655d320b8f9df74dbecf681f52a7334574606c3",
+        "type": "github"
+      },
+      "original": {
+        "dir": "src/modules",
+        "owner": "cachix",
+        "repo": "devenv",
+        "type": "github"
+      }
+    },
+    "js-toolchain-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793858955,
+        "narHash": "sha256-m1takiANb7XLF7/1W8fwTljxSElBwYHFDqxK+PbCSAo=",
+        "owner": "so1ve",
+        "repo": "js-toolchain-overlay",
+        "rev": "5b89c96e0018dd14bfa2c6e1593a46b1bfa56318",
+        "type": "github"
+      },
+      "original": {
+        "owner": "so1ve",
+        "repo": "js-toolchain-overlay",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "inputs": {
+        "nixpkgs-src": "nixpkgs-src"
+      },
+      "locked": {
+        "lastModified": 1793043970,
+        "narHash": "sha256-m14odYTdkBUEkJOiEYs2zjGjn8fcjvdCJsm45+k084U=",
+        "owner": "cachix",
+        "repo": "devenv-nixpkgs",
+        "rev": "d97234e58d4e90e3bf77c082fc3b546e51200938",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cachix",
+        "ref": "rolling",
+        "repo": "devenv-nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792812153,
+        "narHash": "sha256-T2+XBfNbf9pecLUWS4+RtuVNZ3W8K5taG5QdV71mWlk=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "674a2028661e550a97400c1cc992b9cca9a668a1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "ray-devenv": {
+      "flake": false,
+      "locked": {
+        "dir": "dotfiles/devenv",
+        "lastModified": 1793821300,
+        "narHash": "sha256-nNoKiaG5rqTz6/1DLTez79R8M8cTosBu6hBXrixgJCg=",
+        "owner": "so1ve",
+        "repo": "nix-config",
+        "rev": "17ffe9314a8d7f5f790c693e6a5c66870f9635f4",
+        "type": "github"
+      },
+      "original": {
+        "dir": "dotfiles/devenv",
+        "owner": "so1ve",
+        "repo": "nix-config",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "devenv": "devenv",
+        "js-toolchain-overlay": "js-toolchain-overlay",
+        "nixpkgs": "nixpkgs",
+        "ray-devenv": "ray-devenv"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

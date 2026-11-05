@@ -1,0 +1,247 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Arc from '../components/Arc.astro';
+import Icon from '../components/Icon.astro';
+import ProjectIcon from '../components/ProjectIcon.astro';
+import Base from '../layouts/Base.astro';
+import { formatDate, formatSize, groupBy } from '../lib/format';
+import { classifyAssets, displayVersion } from '../lib/release';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({ params: { project: project.id }, props: { project } }));
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const { Content, headings } = await render(project);
+const toc = headings.filter((heading) => heading.depth === 2);
+
+const release = data.release;
+const version = release ? displayVersion(release.tag) : undefined;
+const assets = release ? classifyAssets(release.assets) : [];
+const choices = assets
+  .filter((asset) => asset.primary)
+  .map((asset) => ({
+    platform: asset.platform,
+    url: asset.url,
+    label: asset.platform === '其他' ? '下载' : `下载 ${asset.platform} 版`,
+    detail: [version, asset.kind, formatSize(asset.size)].join(' · '),
+  }));
+const download = choices[0];
+
+const isRelease = (href: string) => /\/releases(\/|$|\?)/.test(href);
+const links = data.actions.filter((action) => !(assets.length > 0 && isRelease(action.href)));
+const install = headings.find((heading) => /安装|快速开始|开始使用|install|getting started/i.test(heading.text));
+const leadLink = download
+  ? undefined
+  : (links[0] ?? (install ? { label: '安装方法', href: `#${install.slug}` } : undefined));
+const sideLinks = download || !links[0] ? links : links.slice(1);
+---
+
+<Base title={`${data.name} · ${data.tagline}`} description={data.summary} colors={data.colors} crumb={data.name}>
+  <section slot="hero" class:list={['hero project-hero wrap', { 'has-cover': data.cover }]}>
+    <Arc class="hero-arc" />
+    <div class="project-head">
+      <ProjectIcon name={data.name} logo={data.logo} size={80} eager />
+      <h1 class="display">{data.name}</h1>
+      <p class="hero-lead">{data.tagline}</p>
+      <div class="hero-actions">
+        {
+          download && (
+            <a class="button on-band download" href={download.url} data-choices={JSON.stringify(choices)}>
+              <Icon name="download" />
+              <span class="download-text">
+                <span class="download-label">{download.label}</span>
+                <span class="download-detail">{download.detail}</span>
+              </span>
+            </a>
+          )
+        }
+        {
+          leadLink && (
+            <a class="button on-band" href={leadLink.href}>
+              {leadLink.label} <Icon name="arrow" />
+            </a>
+          )
+        }
+        {
+          !download && !leadLink && (
+            <a class="button on-band" href={data.url}>
+              <Icon name="github" /> 在 GitHub 查看
+            </a>
+          )
+        }
+        <span class="hero-links">
+          {assets.length > 1 && <a href="#download">其他平台</a>}
+          {
+            (download || leadLink) && (
+              <a href={data.url}>
+                <Icon name="github" /> 源代码
+              </a>
+            )
+          }
+        </span>
+      </div>
+    </div>
+    {
+      data.cover && (
+        <figure class="cover">
+          <img src={data.cover} alt={`${data.name} 界面截图`} loading="eager" />
+        </figure>
+      )
+    }
+  </section>
+
+  <div class="wrap project-body">
+    <aside class="sidebar">
+      <dl class="facts-list">
+        {
+          release && version && (
+            <div>
+              <dt>最新版本</dt>
+              <dd>
+                <a href={release.url}>{version}</a>
+              </dd>
+            </div>
+          )
+        }
+        {
+          release && (
+            <div>
+              <dt>发布时间</dt>
+              <dd>{formatDate(release.publishedAt)}</dd>
+            </div>
+          )
+        }
+        <div>
+          <dt>最近更新</dt>
+          <dd>{formatDate(data.pushedAt)}</dd>
+        </div>
+        {
+          data.language && (
+            <div>
+              <dt>语言</dt>
+              <dd>{data.language}</dd>
+            </div>
+          )
+        }
+        {
+          data.license && (
+            <div>
+              <dt>许可证</dt>
+              <dd>{data.license}</dd>
+            </div>
+          )
+        }
+      </dl>
+      {
+        (sideLinks.length > 0 || data.website) && (
+          <ul class="side-links">
+            {data.website && (
+              <li>
+                <a href={data.website}>
+                  项目网站 <Icon name="external" />
+                </a>
+              </li>
+            )}
+            {sideLinks.map((link) => (
+              <li>
+                <a href={link.href}>
+                  {link.label} <Icon name="external" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      {
+        toc.length > 2 && (
+          <nav class="toc" aria-label="目录">
+            <p class="eyebrow">目录</p>
+            <ul>
+              {toc.map((heading) => (
+                <li>
+                  <a href={`#${heading.slug}`}>{heading.text}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+    </aside>
+
+    <div class="content">
+      {
+        assets.length > 0 && (
+          <section class="downloads" id="download" aria-labelledby="download-title">
+            <div class="downloads-head">
+              <h2 id="download-title">下载 {version}</h2>
+              <a href={release!.url}>
+                发布说明 <Icon name="external" />
+              </a>
+            </div>
+            <div class="platforms">
+              {groupBy(assets, (asset) => asset.platform).map(([platform, files]) => (
+                <section class="platform">
+                  <h3>{platform === '其他' ? '其他文件' : platform}</h3>
+                  <ul>
+                    {files.map((asset) => (
+                      <li>
+                        <a class="file" href={asset.url}>
+                          <span class="file-text">
+                            <span class="file-kind">
+                              {[asset.kind, asset.arch].filter(Boolean).join(' · ')}
+                              {asset.primary && platform !== '其他' && <span class="badge">推荐</span>}
+                              {asset.unsigned && <span class="badge muted">未签名</span>}
+                            </span>
+                            <span class="file-name">{asset.name}</span>
+                          </span>
+                          <span class="file-size">{formatSize(asset.size)}</span>
+                          <Icon name="download" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <article class="readme">
+        <Content />
+      </article>
+    </div>
+  </div>
+</Base>
+
+<script>
+  type Choice = { platform: string; url: string; label: string; detail: string };
+
+  function detectPlatform() {
+    const agent = navigator.userAgent;
+    if (/Android/i.test(agent)) return 'Android';
+    if (/iPhone|iPad|iPod/i.test(agent)) return 'iOS';
+    if (/Mac/i.test(agent)) return 'macOS';
+    if (/Win/i.test(agent)) return 'Windows';
+    if (/Linux|X11|CrOS/i.test(agent)) return 'Linux';
+    return undefined;
+  }
+
+  const button = document.querySelector<HTMLAnchorElement>('.download[data-choices]');
+  if (button) {
+    const choices: Choice[] = JSON.parse(button.dataset.choices!);
+    const match = choices.find((choice) => choice.platform === detectPlatform());
+    if (match) {
+      button.href = match.url;
+      button.querySelector('.download-label')!.textContent = match.label;
+      button.querySelector('.download-detail')!.textContent = match.detail;
+    }
+  }
+</script>

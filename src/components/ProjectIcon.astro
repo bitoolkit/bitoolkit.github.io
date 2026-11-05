@@ -1,0 +1,28 @@
+---
+interface Props {
+  name: string;
+  logo?: string;
+  size: number;
+  eager?: boolean;
+}
+
+const { name, logo, size, eager = false } = Astro.props;
+---
+
+{
+  logo ? (
+    <img
+      class="tile"
+      src={logo}
+      alt=""
+      width={size}
+      height={size}
+      loading={eager ? 'eager' : 'lazy'}
+      style={`--size: ${size}px`}
+    />
+  ) : (
+    <span class="tile tile-letter" aria-hidden="true" style={`--size: ${size}px`}>
+      {[...name][0]}
+    </span>
+  )
+}

@@ -1,0 +1,82 @@
+---
+import '@fontsource-variable/bricolage-grotesque';
+import { getEntry } from 'astro:content';
+import Arc from '../components/Arc.astro';
+import Icon from '../components/Icon.astro';
+import { BRAND_ACCENT, type Accent } from '../lib/color';
+import { path } from '../lib/format';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  colors?: Accent;
+  crumb?: string;
+}
+
+const { title, description, colors = BRAND_ACCENT, crumb } = Astro.props;
+const org = (await getEntry('org', 'bitoolkit'))!.data;
+const builtAt = new Intl.DateTimeFormat('zh-CN', {
+  dateStyle: 'long',
+  timeStyle: 'short',
+  timeZone: 'Asia/Shanghai',
+}).format(new Date());
+const tone = `--deep: ${colors.deep}; --accent: ${colors.accent}; --soft: ${colors.soft};`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content={colors.deep} />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:image" content={org.avatar} />
+    <link rel="icon" href={org.avatar} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+  </head>
+  <body style={tone}>
+    <div class="band">
+      <header class="nav wrap">
+        <a class="wordmark" href={path()}>
+          <img src={org.avatar} alt="" width="32" height="32" />
+          <span>BIToolkit</span>
+        </a>
+        {
+          crumb && (
+            <span class="nav-crumb">
+              <span aria-hidden="true">/</span> {crumb}
+            </span>
+          )
+        }
+        <nav class="nav-links" aria-label="站点">
+          {crumb && <a href={path()}>全部项目</a>}
+          {org.community && <a href={org.community}>交流群</a>}
+          <a href={org.url} aria-label="GitHub">
+            <Icon name="github" />
+          </a>
+        </nav>
+      </header>
+      <slot name="hero" />
+    </div>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <Arc class="footer-arc" />
+      <div class="wrap footer-inner">
+        <a class="footer-mark" href={path()}>BIToolkit</a>
+        <div class="footer-text">
+          {org.disclaimer && <p>{org.disclaimer}</p>}
+          <p>项目信息自动从 GitHub 同步，本页生成于 {builtAt}。</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
