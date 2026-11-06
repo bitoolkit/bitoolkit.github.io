@@ -1,6 +1,6 @@
 # bitoolkit-website
 
-[BIToolkit](https://github.com/bitoolkit) 的网站：一个总览页，以及每个公开项目的独立页面（`/<仓库名>/`）。
+[BIToolkit](https://github.com/bitoolkit) 的网站 <https://bitoolkit.cn>：一个总览页，以及每个公开项目的独立页面（`/<仓库名>/`）。
 
 所有内容在构建时从 GitHub 读取，不需要手动维护：
 
@@ -33,4 +33,4 @@ GITHUB_TOKEN=$(gh auth token) npm run dev
   gh api repos/bitoolkit/<本仓库名>/dispatches -f event_type=project-updated
   ```
 
-在仓库设置中把 Pages 的来源设为 GitHub Actions。仓库名为 `bitoolkit.github.io` 时网站位于根路径，否则位于 `/<仓库名>/`，构建会自动适配。
+在仓库设置中把 Pages 的来源设为 GitHub Actions，自定义域名设为 `bitoolkit.cn`。网站地址写在 `astro.config.mjs` 的 `site`，换域名时两处一起改。`bitoolkit.github.io` 会自动跳转到自定义域名。

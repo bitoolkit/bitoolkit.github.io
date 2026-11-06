@@ -83,7 +83,7 @@ a {
   width: 100%;
   max-width: var(--wrap);
   margin: 0 auto;
-  padding: 0 32px;
+  padding-inline: 32px;
 }
 
 .glyph {
@@ -1127,7 +1127,7 @@ a {
 
 @media (max-width: 760px) {
   .wrap {
-    padding: 0 20px;
+    padding-inline: 20px;
   }
 
   .nav {

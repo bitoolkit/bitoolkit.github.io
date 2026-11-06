@@ -19,14 +19,17 @@ const IGNORED_DIR = /(^|\/)(node_modules|test|tests|fixtures)\//;
 const HIDDEN_ASSET = /-update\.json$/i;
 const PINNED_PROJECTS = ['yanhekit', 'bitree'];
 
-function normalizeUrl(url: string | null) {
-  if (!url) return undefined;
+function normalizeUrl(url: string) {
   const parsed = new URL(/^https?:/.test(url) ? url : `https://${url}`);
-  return `${parsed.origin}${parsed.pathname.replace(/\/?$/, '/')}`.toLowerCase();
+  return `${parsed.host}${parsed.pathname.replace(/\/?$/, '/')}`.toLowerCase();
 }
 
-function pagesUrl(repo: Repo) {
-  return `https://${ORG}.github.io/${repo.name}/`.toLowerCase();
+function externalWebsite(repo: Repo, site: string) {
+  if (!repo.homepage) return undefined;
+  const page = `${repo.name.toLowerCase()}/`;
+  const ownPages = [`${ORG}.github.io/${page}`, normalizeUrl(new URL(page, site).href)];
+  if (ownPages.includes(normalizeUrl(repo.homepage))) return undefined;
+  return new URL(/^https?:/.test(repo.homepage) ? repo.homepage : `https://${repo.homepage}`).href;
 }
 
 interface ProfileProject {
@@ -134,7 +137,6 @@ async function loadProject(repo: Repo) {
 
 function visibleRepos(repos: Repo[]) {
   const self = process.env.GITHUB_REPOSITORY?.split('/')[1]?.toLowerCase();
-  const websites = new Set(repos.map((repo) => normalizeUrl(repo.homepage)));
   return repos.filter(
     (repo) =>
       !repo.private &&
@@ -142,15 +144,15 @@ function visibleRepos(repos: Repo[]) {
       !repo.archived &&
       repo.name !== '.github' &&
       repo.name.toLowerCase() !== `${ORG}.github.io` &&
-      repo.name.toLowerCase() !== self &&
-      !websites.has(pagesUrl(repo)),
+      repo.name.toLowerCase() !== self,
   );
 }
 
 export function projectsLoader(): Loader {
   return {
     name: 'bitoolkit-projects',
-    async load({ store, parseData, renderMarkdown, logger }) {
+    async load({ store, parseData, renderMarkdown, logger, config }) {
+      const site = config.site!;
       const [repos, { projects: listed }] = await Promise.all([listRepos(), loadProfile()]);
       const order = [...new Set([...PINNED_PROJECTS, ...listed.keys()])];
       const rank = (repo: Repo) => {
@@ -187,7 +189,7 @@ export function projectsLoader(): Loader {
               cover: header.cover ?? cover,
               colors: logo ? await accentFromImage(logo) : BRAND_ACCENT,
               url: repo.html_url,
-              website: normalizeUrl(repo.homepage),
+              website: externalWebsite(repo, site),
               language: repo.language ?? undefined,
               license: repo.license?.spdx_id && repo.license.spdx_id !== 'NOASSERTION' ? repo.license.spdx_id : undefined,
               pushedAt: repo.pushed_at,

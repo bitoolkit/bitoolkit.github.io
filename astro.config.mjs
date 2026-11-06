@@ -3,8 +3,7 @@ import { defineConfig } from 'astro/config';
 import { readmePlugin } from './src/lib/readme-plugin';
 
 export default defineConfig({
-  site: process.env.SITE_URL ?? 'https://bitoolkit.github.io',
-  base: process.env.BASE_PATH || '/',
+  site: 'https://bitoolkit.cn',
   trailingSlash: 'always',
   markdown: {
     processor: satteri({ hastPlugins: [readmePlugin], features: { rawHtml: true } }),
